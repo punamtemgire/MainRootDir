@@ -6,12 +6,9 @@ GO
 SET QUOTED_IDENTIFIER OFF
 GO
 
+
 -- =============================================
--- Author:		AQ
--- Create date: 10/19/2015
--- Description:	Get Order for the JPW db
--- Revised by Rick week of 3-14-16
--- Revised by AQ on 7/22/2016  Reason: Added Search filter to not show Stock Items.
+-- Author:	 Poonam T
 -- =============================================
 ALTER PROCEDURE [dbo].[OrderGetByCustomerbyPlant]
 
