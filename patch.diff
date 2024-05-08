@@ -1,0 +1,186 @@
+From beddaf446f43e10eea023310ee67f95a0f093413 Mon Sep 17 00:00:00 2001
+From: "DESKTOP-IK62798\\Poonam.Temgire"
+ <poonam.temgire@extrapreneursindia.com>
+Date: Wed, 8 May 2024 15:49:10 +0530
+Subject: [PATCH] I found the root cause, why errors are coming - when trying
+ to convert string value to integer system throwing error
+
+---
+ OrderGetByCustomerbyPlant.txt | 164 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 164 insertions(+)
+ create mode 100644 OrderGetByCustomerbyPlant.txt
+
+diff --git a/OrderGetByCustomerbyPlant.txt b/OrderGetByCustomerbyPlant.txt
+new file mode 100644
+index 0000000..727d96a
+--- /dev/null
++++ b/OrderGetByCustomerbyPlant.txt
+@@ -0,0 +1,164 @@
++USE [JPW]
++GO
++/****** Object:  StoredProcedure [dbo].[OrderGetByCustomerbyPlant]    Script Date: 5/8/2024 2:25:49 PM ******/
++SET ANSI_NULLS OFF
++GO
++SET QUOTED_IDENTIFIER OFF
++GO
++
++-- =============================================
++-- Author:		AQ
++-- Create date: 10/19/2015
++-- Description:	Get Order for the JPW db
++-- Revised by Rick week of 3-14-16
++-- Revised by AQ on 7/22/2016  Reason: Added Search filter to not show Stock Items.
++-- =============================================
++ALTER PROCEDURE [dbo].[OrderGetByCustomerbyPlant]
++
++@customerNumber varchar(50),
++@plantName varchar(30)
++
++AS
++
++	
++declare @chkvalueintorvar varchar(10)=null
++
++SELECT @chkvalueintorvar=TRY_CONVERT(int, @customerNumber )
++
++if (@chkvalueintorvar is not null)
++begin
++
++	select  @chkvalueintorvar as 'ISInt'
++	If @plantName = '7'
++	  Begin 
++	  
++  		Select *, ([height] + ' x ' +  [width]) As Size, PJ.ID As JobID, PJ.IsProcessed As JobIsProcessed,
++			CASE
++				When len([pmsColor4]) > 0 Then [pmsColor1] + ', ' + [pmsColor2] + ', ' + [pmsColor3] + ', ' + [pmsColor4]
++				When len([pmsColor3]) > 0 Then [pmsColor1] + ', ' + [pmsColor2] + ', ' + [pmsColor3]
++				When len([pmsColor2]) > 0 Then [pmsColor1] + ', ' + [pmsColor2]
++					Else [pmsColor1]
++				End as Colors,
++			CASE
++					When [detailLine] IS NULL Then [salesOrderNumber]
++					When len([detailLine]) = 1 Then [salesOrderNumber] + ' - 0' + [detailLine]
++					--When len([detailLine]) = 2 Then [salesOrderNumber] + ' - 0' + [detailLine]
++						Else [salesOrderNumber] + ' - ' + [detailLine]
++					End as CombinedSOLn	
++			From Orders As O LEFT OUTER JOIN ProcessJobs As PJ On O.salesOrderNumber = PJ.SalesOrderNum
++			Where (O.IsProcessed = 0) And (O.customerNumber = @customerNumber) And (O.plantName = @plantName) And (O.IsActive = 1) And (O.productIndicator <> 'STK')
++					 And (O.IsVisable = 1) --And (O.productIndicator = 'S/J') Or
++				  --(O.IsProcessed = 0) And (O.customerNumber = @customerNumber) And (O.plantName = @plantName) And (O.productIndicator IS NULL)
++			Order by O.erp_SKUNumber, O.salesOrderNumber --O.custFormNumber, O.orderDate
++
++	  End 
++	  
++	Else
++
++	  Begin 
++	  
++		Select *, ([height] + ' x ' +  [width]) As Size, PJ.ID As JobID, PJ.IsProcessed As JobIsProcessed,
++			CASE
++				When len([pmsColor4]) > 0 Then [pmsColor1] + ', ' + [pmsColor2] + ', ' + [pmsColor3] + ', ' + [pmsColor4]
++				When len([pmsColor3]) > 0 Then [pmsColor1] + ', ' + [pmsColor2] + ', ' + [pmsColor3]
++				When len([pmsColor2]) > 0 Then [pmsColor1] + ', ' + [pmsColor2]
++					Else [pmsColor1]
++				End as Colors,
++			CASE
++					When [detailLine] IS NULL Then [salesOrderNumber]
++					When len([detailLine]) = 1 Then [salesOrderNumber] + ' - 0' + [detailLine]
++					--When len([detailLine]) = 2 Then [salesOrderNumber] + ' - 0' + [detailLine]
++						Else [salesOrderNumber] + ' - ' + [detailLine]
++					End as CombinedSOLn	
++			From Orders As O LEFT OUTER JOIN ProcessJobs As PJ On O.salesOrderNumber = PJ.SalesOrderNum
++			Where
++				(@customerNumber = 18070 AND (O.IsProcessed = 0) And (O.customerNumber = @customerNumber) And (O.plantName = @plantName) And (O.IsActive = 1) And (O.IsVisable = 1) )
++					Or
++				(@customerNumber <> 18070 AND (O.IsProcessed = 0) And (O.customerNumber = @customerNumber) And (O.plantName = @plantName) And (O.productIndicator <> 'STK') And (O.IsActive = 1)
++					And (O.IsVisable = 1))
++			--Where (O.IsProcessed = 0) And (O.customerNumber = @customerNumber) And (O.plantName = @plantName) And (O.productIndicator <> 'STK') --Or
++				  --(O.IsProcessed = 0) And (O.customerNumber = @customerNumber) And (O.plantName = @plantName) And (O.productIndicator IS NULL)
++			Order by O.custFormNumber, O.orderDate
++
++	  End 
++
++end else
++begin
++
++select 'ISVar'
++
++If @plantName = '7'
++	  Begin 
++	  
++  		Select *, ([height] + ' x ' +  [width]) As Size, PJ.ID As JobID, PJ.IsProcessed As JobIsProcessed,
++			CASE
++				When len([pmsColor4]) > 0 Then [pmsColor1] + ', ' + [pmsColor2] + ', ' + [pmsColor3] + ', ' + [pmsColor4]
++				When len([pmsColor3]) > 0 Then [pmsColor1] + ', ' + [pmsColor2] + ', ' + [pmsColor3]
++				When len([pmsColor2]) > 0 Then [pmsColor1] + ', ' + [pmsColor2]
++					Else [pmsColor1]
++				End as Colors,
++			CASE
++					When [detailLine] IS NULL Then [salesOrderNumber]
++					When len([detailLine]) = 1 Then [salesOrderNumber] + ' - 0' + [detailLine]
++					--When len([detailLine]) = 2 Then [salesOrderNumber] + ' - 0' + [detailLine]
++						Else [salesOrderNumber] + ' - ' + [detailLine]
++					End as CombinedSOLn	
++			From Orders As O LEFT OUTER JOIN ProcessJobs As PJ On O.salesOrderNumber = PJ.SalesOrderNum
++			Where (O.IsProcessed = 0) 
++			--And (O.customerNumber = @customerNumber) 
++			and (O.customerName like '%'+@customerNumber+'%')   -- Added by Poonam 8th May 24 - if customernam pass thr SP instead of customerNumber
++			And (O.plantName = @plantName) 
++			And (O.IsActive = 1) 
++			And (O.productIndicator <> 'STK')
++			And (O.IsVisable = 1) 
++			--And (O.productIndicator = 'S/J') Or 
++			--(O.IsProcessed = 0) And (O.customerNumber = @customerNumber) And (O.plantName = @plantName) And (O.productIndicator IS NULL)
++			Order by O.erp_SKUNumber, O.salesOrderNumber --O.custFormNumber, O.orderDate
++
++	  End 
++	  
++	Else
++
++	  Begin 
++	  
++		Select *, ([height] + ' x ' +  [width]) As Size, PJ.ID As JobID, PJ.IsProcessed As JobIsProcessed,
++			CASE
++				When len([pmsColor4]) > 0 Then [pmsColor1] + ', ' + [pmsColor2] + ', ' + [pmsColor3] + ', ' + [pmsColor4]
++				When len([pmsColor3]) > 0 Then [pmsColor1] + ', ' + [pmsColor2] + ', ' + [pmsColor3]
++				When len([pmsColor2]) > 0 Then [pmsColor1] + ', ' + [pmsColor2]
++					Else [pmsColor1]
++				End as Colors,
++			CASE
++					When [detailLine] IS NULL Then [salesOrderNumber]
++					When len([detailLine]) = 1 Then [salesOrderNumber] + ' - 0' + [detailLine]
++					--When len([detailLine]) = 2 Then [salesOrderNumber] + ' - 0' + [detailLine]
++						Else [salesOrderNumber] + ' - ' + [detailLine]
++					End as CombinedSOLn	
++			From Orders As O LEFT OUTER JOIN ProcessJobs As PJ On O.salesOrderNumber = PJ.SalesOrderNum
++			Where
++				(@customerNumber = '18070' 
++				AND (O.IsProcessed = 0) 
++				--And (O.customerNumber = @customerNumber)
++				and O.customerName like '%'+@customerNumber+'%'  -- Added by Poonam 8th May 24 - if customernam pass thr SP instead of customerNumber
++				And (O.plantName = @plantName) 
++				And (O.IsActive = 1) And (O.IsVisable = 1) )
++
++				Or
++
++				(@customerNumber <> '18070' 
++				AND (O.IsProcessed = 0) 
++				--And (O.customerNumber = @customerNumber) 
++				and O.customerName like '%'+@customerNumber+'%'   -- Added by Poonam 8th May 24 - if customernam pass thr SP instead of customerNumber
++				And (O.plantName = @plantName) 
++				And (O.productIndicator <> 'STK') 
++				And (O.IsActive = 1)
++				And (O.IsVisable = 1))
++			    --Where (O.IsProcessed = 0) And (O.customerNumber = @customerNumber) And (O.plantName = @plantName) And (O.productIndicator <> 'STK') --Or
++				--(O.IsProcessed = 0) And (O.customerNumber = @customerNumber) And (O.plantName = @plantName) And (O.productIndicator IS NULL)
++			Order by O.custFormNumber, O.orderDate
++
++	  End 
++
++
++
++end
+\ No newline at end of file
+-- 
+2.45.0.windows.1
+
